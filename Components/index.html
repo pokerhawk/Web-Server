@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script src="https://cdn.socket.io/socket.io-3.0.1.min.js"></script>
+<body>
+</head>
+	<header>
+	</header>
+	<main>
+		<div>
+			<fieldset>
+				<legend><h1>Terraria</h1></legend>
+				<input type="text" placeholder="Comando" id="msg_to_server">
+				<br>
+				<button type="button" onclick="sendMessage('terrariaServer')">Enviar</button>
+				<button type="button" onclick="terraria_server()">Abrir Servidor</button>
+				<h1 class="terraria_msg"></h1>
+			</fieldset>
+		</div>
+		<div>
+			<fieldset>
+				<legend><h1>Tmod</h1></legend>
+				<button type="button" onclick="tmod_server()">Abrir Servidor</button>
+			</fieldset>
+		</div>
+		<div>
+			<fieldset>
+				<legend><h1>Minecraft</h1></legend>
+				<button type="button" onclick="mine_server()">Abrir Servidor</button>
+			</fieldset>
+		</div>
+	</main>
+	<script defer>
+		const socket = io("/") //https:localhost:3000//
+		socket.on('connection', ()=>{
+			console.log('connected')
+		})
+		socket.on('message', (data)=>{
+			console.log(data)
+		})
+		socket.on('terrariaServer', (data)=>{
+			const terraria_msg = document.getElementByClassName("terraria_msg");
+			terraria_msg.value = data;
+		})
+		const sendMessage = (url) =>{
+			const msg_to_server = document.getElementById("msg_to_server").value;
+			socket.emit(url, msg_to_server)
+		}
+
+		const terraria_server = async () => {
+			const res = await (await fetch("/terrariaServer")).json();
+			if(res == "Servidor Fechado"){
+				location.reload();
+			}
+			console.log(res)
+		};
+		const tmod_server = async () => {
+			const res = await (await fetch("/tModServer")).json();
+			if(res == "Servidor Fechado"){
+				location.reload();
+			}
+			console.log(res)
+		}
+		const mine_server = async () => {
+			const res = await (await fetch("/mineServer")).json();
+			if(res == "Servidor Fechado"){
+				location.reload();
+			}
+			console.log(res)
+		}
+	</script>
+</body>
+</html>
