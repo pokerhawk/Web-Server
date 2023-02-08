@@ -7,105 +7,90 @@ const { exec, spawn } = require("child_process");
 
 app.get("/", function (req, res, next) {
   // Serve the index.html file in the root directory of the website.
-  res.sendFile("~/Files/Web-Server/Components/index.html");
+  res.sendFile("/home/pk/Files/Web-Server/Components/index.html");
   // res.render('index');
 });
 
 io.on("connection", (socket) => {
-  console.log("Usuario conectado, ID: " + socket.id);
-  // socket.on("message", (data) => {
-  //   console.log(data);
-  //   socket.broadcast.emit("message", data);
-  // });
-  socket.on("terrariaServer", (data) => {
+  let child_process_terraria;
+  let child_process_tmod;
+  let child_process_mine;
+  let repeated_data;
+  socket.on("terraria_server", (data) => {
     if (data == "start") {
-      const child = spawn(
+      child_process_terraria = spawn(
         "bash",
         ["/home/pk/Servers/Terraria_Server/TerrariaServer"],
-        { stdio: "pipe" } //change to inherit
+        { stdio: "pipe" }
       );
     }
-  });
-});
-
-//COLOCAR TUDO ABAIXO DENTRO DO DE CIMA
-
-app.get("/terrariaServer", (req, res) => {
-  const child = spawn("bash", [
-    "/home/pk/Servers/Terraria_Server/TerrariaServer",
-  ]);
-  child.stdout.on("data", (data) => {
-    const array_data = data.toString().split(" ");
-    // console.log(array_data); //TEST PARA CONDICIONAIS
-    for (i in array_data) {
-      if (array_data[i] == "World:") {
-        child.stdin.write("1\n");
-      }
-      if (array_data[i] == "players") {
-        child.stdin.write("4\n");
-      }
-      if (array_data[i] == "port") {
-        child.stdin.write("\n");
-      }
-      if (array_data[i] == "forward") {
-        child.stdin.write("n\n");
-      }
-      if (array_data[i] == "password") {
-        child.stdin.write("rosadinha\n");
-      }
-      if (array_data[i] == "save\n") {
-        child.stdin.write("save\n");
-      }
-      if (array_data[i] == "exit\n") {
-        child.stdin.write("exit");
-        res.json("Servidor Fechado");
-        return child.stdin.end();
-      }
+    if (data == "exit") {
+      child_process_terraria.stdin.write("exit");
+      child_process_terraria.stdin.end();
     }
-    console.log(data.toString());
-  });
-});
-
-app.get("/tModServer", (req, res) => {
-  const child_process = exec(
-    "bash ~/Servers/tMod_Server/LaunchUtils/ScriptCaller.sh -server"
-  );
-  child_process.stdout.on("data", (data) => {
-    const array_data = data.toString().split(" ");
-    console.log(array_data);
-    for (i in array_data) {
-      if (array_data[i] == "World:") {
-        child_process.stdin.write("1\n");
-      }
-      if (array_data[i] == "players") {
-        child_process.stdin.write("4\n");
-      }
-      if (array_data[i] == "port") {
-        child_process.stdin.write("\n");
-      }
-      if (array_data[i] == "forward") {
-        child_process.stdin.write("n\n");
-      }
-      if (array_data[i] == "password") {
-        child_process.stdin.write("rosadinha\n");
-      }
-      if (array_data[i] == "save\n") {
-        child_process.stdin.write("save\n");
-      }
-      if (array_data[i] == "exit\n") {
-        child_process.stdin.write("exit\n");
-      }
+    if (data != "start" && data != "stop") {
+      child_process_terraria.stdin.write(data + "\n");
     }
-    // console.log(data.toString());
+    child_process_terraria.stdout.on("data", (log) => {
+      if (repeated_data != log.toString()) {
+        console.log(log.toString());
+        socket.emit("terraria_server", log.toString());
+        repeated_data = log.toString();
+      }
+    });
   });
-});
-
-app.get("/mineServer", (req, res) => {
-  const child = spawn(
-    "java",
-    ["-jar", "-Xmx2048M", "-Xms2048M", "minecraft_server.1.18.2.jar", "nogui"],
-    { stdio: "inherit", cwd: "/home/pk/Servers/Mine_Server/" }
-  );
+  socket.on("tmod_server", (data) => {
+    if (data == "start") {
+      child_process_tmod = exec(
+        "bash /home/pk/Servers/tMod_Server/LaunchUtils/ScriptCaller.sh -server"
+      );
+    }
+    if (data == "exit") {
+      child_process_tmod.stdin.write("exit");
+      child_process_tmod.stdin.end();
+    }
+    if (data != "start" && data != "stop") {
+      child_process_tmod.stdin.write(data + "\n");
+    }
+    child_process_tmod.stdout.on("data", (log) => {
+      if (repeated_data != log.toString()) {
+        console.log(log.toString());
+        // console.log(child_process_tmod.pid);
+        socket.emit("tmod_server", log.toString());
+        repeated_data = log.toString();
+      }
+    });
+  });
+  socket.on("minecraft_server", (data) => {
+    if (data == "start") {
+      child_process_mine = spawn(
+        "java",
+        [
+          "-jar",
+          "-Xmx2048M",
+          "-Xms2048M",
+          "minecraft_server.1.18.2.jar",
+          "nogui",
+        ],
+        { stdio: "pipe", cwd: "/home/pk/Servers/Mine_Server/" }
+      );
+    }
+    if (data == "/stop") {
+      child_process_mine.stdin.write("/stop");
+      child_process_mine.stdin.end();
+    }
+    if (data != "start" && data != "/stop") {
+      child_process_mine.stdin.write(data + "\n");
+    }
+    child_process_mine.stdout.on("data", (log) => {
+      if (repeated_data != log.toString()) {
+        console.log(log.toString());
+        socket.emit("minecraft_server", log.toString());
+        repeated_data = log.toString();
+      }
+    });
+  });
+  console.log("Usuario conectado, ID: " + socket.id);
 });
 
 server.listen(3000, () => {

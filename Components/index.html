@@ -11,25 +11,36 @@
 	</header>
 	<main>
 		<div>
+			<h1>Lista de Comandos</h1>
+			<p>"start": Inicia servidor</p>
+			<p>"exit": Fecha Terraria servidor</p>
+			<p>"/stop": Fecha Minecraft servidor</p>
+		</div>
+		<div>
 			<fieldset>
 				<legend><h1>Terraria</h1></legend>
-				<input type="text" placeholder="Comando" id="msg_to_server">
+				<input type="text" placeholder="Comando" id="terraria_msg_to_server">
 				<br>
-				<button type="button" onclick="sendMessage('terrariaServer')">Enviar</button>
-				<button type="button" onclick="terraria_server()">Abrir Servidor</button>
-				<h1 class="terraria_msg"></h1>
+				<button type="button" onclick="sendMessage('terraria_server', 'terraria_msg_to_server')">Mandar Comando</button>
+				<p id="terraria_log"></p>
 			</fieldset>
 		</div>
 		<div>
 			<fieldset>
 				<legend><h1>Tmod</h1></legend>
-				<button type="button" onclick="tmod_server()">Abrir Servidor</button>
+				<input type="text" placeholder="Comando" id="tmod_msg_to_server">
+				<br>
+				<button type="button" onclick="sendMessage('tmod_server', 'tmod_msg_to_server')">Mandar Comando</button>
+				<p id="tmod_log"></p>
 			</fieldset>
 		</div>
 		<div>
 			<fieldset>
 				<legend><h1>Minecraft</h1></legend>
-				<button type="button" onclick="mine_server()">Abrir Servidor</button>
+				<input type="text" placeholder="Comando" id="mine_msg_to_server">
+				<br>
+				<button type="button" onclick="sendMessage('minecraft_server', 'mine_msg_to_server')">Mandar Comando</button>
+				<p id="minecraft_log"></p>
 			</fieldset>
 		</div>
 	</main>
@@ -38,39 +49,34 @@
 		socket.on('connection', ()=>{
 			console.log('connected')
 		})
-		socket.on('message', (data)=>{
-			console.log(data)
+		const sendMessage = (url, id) =>{
+			let msg_to_server = document.getElementById(id);
+			socket.emit(url, msg_to_server.value)
+			msg_to_server.value = '';
+		}
+		socket.on('terraria_server', (data)=>{
+			console.log(data);
+			document.getElementById("terraria_log").innerHTML = data;
 		})
-		socket.on('terrariaServer', (data)=>{
-			const terraria_msg = document.getElementByClassName("terraria_msg");
-			terraria_msg.value = data;
+		socket.on('tmod_server', (data) =>{
+			console.log(data);
+			document.getElementById('tmod_log').innerHTML = data;
 		})
-		const sendMessage = (url) =>{
-			const msg_to_server = document.getElementById("msg_to_server").value;
-			socket.emit(url, msg_to_server)
+		socket.on('minecraft_server', (data) =>{
+			console.log(data);
+			document.getElementById('minecraft_log').innerHTML = data;
+		})
+		const enter_event = (id_listener, url, id) =>{
+			document.getElementById(id_listener).addEventListener("keydown", (event)=>{
+				if(event.key == "Enter"){
+					sendMessage(url, id)
+				}
+			})
+			document.getElementById(id_listener).value = '';
 		}
-
-		const terraria_server = async () => {
-			const res = await (await fetch("/terrariaServer")).json();
-			if(res == "Servidor Fechado"){
-				location.reload();
-			}
-			console.log(res)
-		};
-		const tmod_server = async () => {
-			const res = await (await fetch("/tModServer")).json();
-			if(res == "Servidor Fechado"){
-				location.reload();
-			}
-			console.log(res)
-		}
-		const mine_server = async () => {
-			const res = await (await fetch("/mineServer")).json();
-			if(res == "Servidor Fechado"){
-				location.reload();
-			}
-			console.log(res)
-		}
+		enter_event("terraria_msg_to_server", 'terraria_server', 'terraria_msg_to_server');
+		enter_event("tmod_msg_to_server", 'tmod_server', 'tmod_msg_to_server');
+		enter_event("mine_msg_to_server", 'minecraft_server', 'mine_msg_to_server');
 	</script>
 </body>
 </html>
