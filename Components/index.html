@@ -19,15 +19,20 @@
 		<div>
 			<fieldset>
 				<legend><h1>Terraria</h1></legend>
+				<textarea id='terraria_log' rows=8 cols=60 autofocus>
+				</textarea>
+				<br>
 				<input type="text" placeholder="Comando" id="terraria_msg_to_server">
 				<br>
 				<button type="button" onclick="sendMessage('terraria_server', 'terraria_msg_to_server')">Mandar Comando</button>
-				<p id="terraria_log"></p>
 			</fieldset>
 		</div>
 		<div>
 			<fieldset>
 				<legend><h1>Tmod</h1></legend>
+				<textarea id='tmod_log' rows=8 cols=60 autofocus>
+				</textarea>
+				<br>
 				<input type="text" placeholder="Comando" id="tmod_msg_to_server">
 				<br>
 				<button type="button" onclick="sendMessage('tmod_server', 'tmod_msg_to_server')">Mandar Comando</button>
@@ -37,6 +42,9 @@
 		<div>
 			<fieldset>
 				<legend><h1>Minecraft</h1></legend>
+				<textarea id='minecraft_log' rows=8 cols=60 autofocus>
+				</textarea>
+				<br>
 				<input type="text" placeholder="Comando" id="mine_msg_to_server">
 				<br>
 				<button type="button" onclick="sendMessage('minecraft_server', 'mine_msg_to_server')">Mandar Comando</button>
@@ -55,16 +63,22 @@
 			msg_to_server.value = '';
 		}
 		socket.on('terraria_server', (data)=>{
+			const txt = document.getElementById('terraria_log');
 			console.log(data);
-			document.getElementById("terraria_log").innerHTML = data;
+			txt.value += `${data}`;
+		    txt.scrollTop = txt.scrollHeight;
 		})
 		socket.on('tmod_server', (data) =>{
+			const txt = document.getElementById('tmod_log');
 			console.log(data);
-			document.getElementById('tmod_log').innerHTML = data;
+			txt.value += `${data}`;
+		    txt.scrollTop = txt.scrollHeight;
 		})
 		socket.on('minecraft_server', (data) =>{
+			const txt = document.getElementById('minecraft_log');
 			console.log(data);
-			document.getElementById('minecraft_log').innerHTML = data;
+			txt.value += `${data}`;
+		    txt.scrollTop = txt.scrollHeight;
 		})
 		const enter_event = (id_listener, url, id) =>{
 			document.getElementById(id_listener).addEventListener("keydown", (event)=>{

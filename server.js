@@ -27,8 +27,9 @@ io.on("connection", (socket) => {
     if (data == "exit") {
       child_process_terraria.stdin.write("exit");
       child_process_terraria.stdin.end();
+      socket.emit("terraria_server", "Server Closed!!");
     }
-    if (data != "start" && data != "stop") {
+    if (data != "start" && data != "exit") {
       child_process_terraria.stdin.write(data + "\n");
     }
     child_process_terraria.stdout.on("data", (log) => {
@@ -49,7 +50,7 @@ io.on("connection", (socket) => {
       child_process_tmod.stdin.write("exit");
       child_process_tmod.stdin.end();
     }
-    if (data != "start" && data != "stop") {
+    if (data != "start" && data != "exit") {
       child_process_tmod.stdin.write(data + "\n");
     }
     child_process_tmod.stdout.on("data", (log) => {
