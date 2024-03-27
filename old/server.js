@@ -1,3 +1,5 @@
+//DEPRECATED
+
 app.get("/terrariaServer", (req, res) => {
   const child = spawn("bash", [
     "/home/pk/Servers/Terraria_Server/TerrariaServer",

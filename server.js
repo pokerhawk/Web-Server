@@ -5,9 +5,14 @@ const server = require("http").createServer(app);
 const io = require("socket.io")(server, { cors: { origin: "*" } });
 const { exec, spawn } = require("child_process");
 
+//DIRETÓRIO DO INDEX.HTML
+const path_to_html = '/home/pk/Work/Web-Server/Components/index.html';
+//DIRETÓRIO PARA AONDE ESTÁ SEUS SERVIDORES
+const path_to_server_folder = '/home/pk/Servers';
+
 app.get("/", function (req, res, next) {
-  // Serve the index.html file in the root directory of the website.
-  res.sendFile("/home/pk/Files/Web-Server/Components/index.html");
+  // Serve o index.html pro diretório root do website.
+  res.sendFile(path_to_html);
   // res.render('index');
 });
 
@@ -16,11 +21,13 @@ io.on("connection", (socket) => {
   let child_process_tmod;
   let child_process_mine;
   let repeated_data;
+
+  //SOCKET DO TERRARIA
   socket.on("terraria_server", (data) => {
     if (data == "start") {
       child_process_terraria = spawn(
         "bash",
-        ["/home/pk/Servers/Terraria_Server/TerrariaServer"],
+        [`${path_to_server_folder}/Terraria_Server/TerrariaServer`],
         { stdio: "pipe" }
       );
     }
@@ -40,10 +47,12 @@ io.on("connection", (socket) => {
       }
     });
   });
+
+  //SOCKET DO TMOD
   socket.on("tmod_server", (data) => {
     if (data == "start") {
       child_process_tmod = exec(
-        "bash /home/pk/Servers/tMod_Server/LaunchUtils/ScriptCaller.sh -server"
+        `bash ${path_to_server_folder}/tMod_Server/LaunchUtils/ScriptCaller.sh -server`
       );
     }
     if (data == "exit") {
@@ -62,6 +71,8 @@ io.on("connection", (socket) => {
       }
     });
   });
+
+  //SOCKET DO MINECRAFT
   socket.on("minecraft_server", (data) => {
     if (data == "start") {
       child_process_mine = spawn(
@@ -73,7 +84,7 @@ io.on("connection", (socket) => {
           "minecraft_server.1.18.2.jar",
           "nogui",
         ],
-        { stdio: "pipe", cwd: "/home/pk/Servers/Mine_Server/" }
+        { stdio: "pipe", cwd: `${path_to_server_folder}/Mine_Server/` }
       );
     }
     if (data == "/stop") {
@@ -91,6 +102,9 @@ io.on("connection", (socket) => {
       }
     });
   });
+
+  //SOCKET
+  //Console log de quando alguem conecta
   console.log("Usuario conectado, ID: " + socket.id);
 });
 
